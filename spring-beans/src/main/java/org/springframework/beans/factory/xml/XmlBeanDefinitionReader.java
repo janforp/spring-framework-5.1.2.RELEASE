@@ -495,6 +495,8 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	}
 
 	/**
+	 * 拿到xml文档文件之后，提取，注册bean
+	 *
 	 * Register the bean definitions contained in the given DOM document.
 	 * Called by {@code loadBeanDefinitions}.
 	 * <p>Creates a new instance of the parser class and invokes

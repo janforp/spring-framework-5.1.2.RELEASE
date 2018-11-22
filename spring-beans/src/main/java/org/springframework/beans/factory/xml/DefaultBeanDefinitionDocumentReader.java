@@ -72,6 +72,12 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 	public static final String RESOURCE_ATTRIBUTE = "resource";
 
+	/**
+	 * <bean profile='dev'>
+	 *
+	 * </bean>
+	 * 在配置bean的时候，也能根据环境区分
+	 */
 	public static final String PROFILE_ATTRIBUTE = "profile";
 
 
@@ -113,7 +119,6 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		return getReaderContext().extractSource(ele);
 	}
 
-
 	/**
 	 * Register each bean definition within the given root {@code <beans/>} element.
 	 */
@@ -125,16 +130,19 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// the new (child) delegate with a reference to the parent for fallback purposes,
 		// then ultimately reset this.delegate back to its original (parent) reference.
 		// this behavior emulates a stack of delegates without actually necessitating one.
+		//解析
 		BeanDefinitionParserDelegate parent = this.delegate;
 		this.delegate = createDelegate(getReaderContext(), root, parent);
 
 		if (this.delegate.isDefaultNamespace(root)) {
+			//dev,pro test,判断环境是否匹配
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
 			if (StringUtils.hasText(profileSpec)) {
 				String[] specifiedProfiles = StringUtils.tokenizeToStringArray(
 						profileSpec, BeanDefinitionParserDelegate.MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 				// We cannot use Profiles.of(...) since profile expressions are not supported
 				// in XML config. See SPR-12458 for details.
+				//如果该bean配置的环境不是当前的环境，则不往下执行
 				if (!getReaderContext().getEnvironment().acceptsProfiles(specifiedProfiles)) {
 					if (logger.isDebugEnabled()) {
 						logger.debug("Skipped XML bean definition file due to specified profiles [" + profileSpec +
@@ -144,8 +152,9 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				}
 			}
 		}
-
+		//前后2个空实现方法，模版方法设计模式
 		preProcessXml(root);
+		//真正执行生成bean
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -163,7 +172,8 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	/**
 	 * Parse the elements at the root level in the document:
 	 * "import", "alias", "bean".
-	 * @param root the DOM root element of the document
+	 * @param delegate	解析器
+	 * @param root 		the DOM root element of the document
 	 */
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
 		if (delegate.isDefaultNamespace(root)) {
@@ -188,6 +198,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
+			//import进来的配置文件
 			importBeanDefinitionResource(ele);
 		}
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
@@ -207,6 +218,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * from the given resource into the bean factory.
 	 */
 	protected void importBeanDefinitionResource(Element ele) {
+		//import进来的配置文件的地址
 		String location = ele.getAttribute(RESOURCE_ATTRIBUTE);
 		if (!StringUtils.hasText(location)) {
 			getReaderContext().error("Resource location must not be empty", ele);

@@ -38,6 +38,8 @@ import org.springframework.util.ResourceUtils;
  * be opened; "isOpen" will always return false; "getURL" and "getFile"
  * throw an exception; and "toString" will return the description.
  *
+ * 主要作用：把不同类型的配置文件统一转换为输入流
+ *
  * @author Juergen Hoeller
  * @since 28.12.2003
  */
