@@ -133,7 +133,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		//解析
 		BeanDefinitionParserDelegate parent = this.delegate;
 		this.delegate = createDelegate(getReaderContext(), root, parent);
-
+		//判断命名空间是否是bean的命名空间
 		if (this.delegate.isDefaultNamespace(root)) {
 			//dev,pro test,判断环境是否匹配
 			String profileSpec = root.getAttribute(PROFILE_ATTRIBUTE);
@@ -183,9 +183,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 				if (node instanceof Element) {
 					Element ele = (Element) node;
 					if (delegate.isDefaultNamespace(ele)) {
+						//解析默认标签
 						parseDefaultElement(ele, delegate);
 					}
 					else {
+						//解析自定义标签
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -196,19 +198,29 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		}
 	}
 
+	/**
+	 * 解析默认标签
+	 * import/alias/bean/beans
+	 *
+	 * @param ele		标签元素
+	 * @param delegate	解析器
+	 */
 	private void parseDefaultElement(Element ele, BeanDefinitionParserDelegate delegate) {
 		if (delegate.nodeNameEquals(ele, IMPORT_ELEMENT)) {
 			//import进来的配置文件
 			importBeanDefinitionResource(ele);
 		}
 		else if (delegate.nodeNameEquals(ele, ALIAS_ELEMENT)) {
+			//alias
 			processAliasRegistration(ele);
 		}
 		else if (delegate.nodeNameEquals(ele, BEAN_ELEMENT)) {
+			//bean
 			processBeanDefinition(ele, delegate);
 		}
 		else if (delegate.nodeNameEquals(ele, NESTED_BEANS_ELEMENT)) {
-			// recurse
+			// 递归调用之前的函数
+			//beans
 			doRegisterBeanDefinitions(ele);
 		}
 	}
@@ -315,6 +327,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	 * and registering it with the registry.
 	 */
 	protected void processBeanDefinition(Element ele, BeanDefinitionParserDelegate delegate) {
+		//BeanDefinitionHolder:保存了bean的一些基本的信息
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
